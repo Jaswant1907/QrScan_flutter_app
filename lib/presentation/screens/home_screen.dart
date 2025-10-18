@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qscan_app_flutter/presentation/screens/history_screen.dart';
 import 'package:qscan_app_flutter/presentation/screens/scanner_screen.dart';
-import 'package:qscan_app_flutter/presentation/screens/text_screen.dart';
+import 'package:qscan_app_flutter/presentation/screens/home_tab.dart';
 import 'package:qscan_app_flutter/presentation/widget/tab_chips.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -14,9 +13,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   int _selectedIndex = 0;
-
-  static const List<Widget> _pages = [TextScreen(), HistoryScreen()];
-
+  final List<Widget> pages = [HomeTab(), HistoryScreen()];
   static const List<String> _labels = ['Home', 'History'];
 
   @override
@@ -36,58 +33,70 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = const Color.fromARGB(255, 53, 65, 157);
+    final Color backgroundColor = const Color(0xFFF5F5F5);
+
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: primaryColor,
+        elevation: 4,
+        title: const Text(
+          "QScan App",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              //
+            },
+          ),
+        ],
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 60,
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    offset: Offset(0, 2),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Icon(Icons.padding, size: 22, color: Colors.grey[700]),
-                  //SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Scanner",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
-                      ),
+            const SizedBox(height: 12),
+
+            TabChips(
+              labels: _labels,
+              selectedIndex: _selectedIndex,
+              onTap: _onChipTap,
+            ),
+
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
-                  ),
-                  Icon(Icons.menu, size: 22, color: Colors.grey[700]),
-                ],
+                  ],
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() => _selectedIndex = index);
+                  },
+                  children: pages,
+                ),
               ),
             ),
 
-            TabChips(
-              labels: ['Home', 'History'],
-              selectedIndex: _selectedIndex,
-              onTap: (index) {
-                setState(() => _selectedIndex = index);
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -96,15 +105,16 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ScannerScreen()),
+            MaterialPageRoute(builder: (_) => const ScannerScreen()),
           );
         },
+        shape: CircleBorder(),
+        backgroundColor: primaryColor,
+        elevation: 8,
 
-        backgroundColor: Colors.blue,
-        shape: const CircleBorder(),
-        // your icon
-        child: const Icon(Icons.qr_code_scanner_outlined),
+        child: const Icon(Icons.qr_code_scanner_outlined, size: 30),
       ),
+      //  floatingActionButtonLocation: FloatingActionButtonLocation.,
     );
   }
 }

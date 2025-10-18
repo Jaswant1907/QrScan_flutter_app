@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:image_pickers/image_pickers.dart';
+import 'dart:io';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -9,7 +11,23 @@ class ScannerScreen extends StatefulWidget {
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  // MobileScannerController cameraController = MobileScannerController();
+  final ImagePickers _picker = ImagePickers();
+
+  bool isStarted = true;
+
+  void _toggleScanning() {
+    setState(() {
+      if (isStarted) {
+        cameraController.stop();
+        isStarted = false;
+        isScanning = false;
+      } else {
+        cameraController.start();
+        isStarted = true;
+        isScanning = true;
+      }
+    });
+  }
 
   bool isScanning = true;
 
@@ -46,7 +64,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        leading: Icon(Icons.arrow_back, color: Colors.black),
+
         actions: [
           IconButton(
             icon: const Icon(Icons.account_circle_outlined, color: Colors.grey),
@@ -58,17 +76,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
       ),
       body: Column(
         children: [
-          // // Tab buttons
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(vertical: 16.0),
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
-          //       _buildTabButton('Scan', true),
-          //       const SizedBox(width: 12),
-          //       _buildTabButton('History', false),
-          //     ],
-          //   ),
           // ),
 
           // Scanner area
@@ -149,11 +156,35 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     cameraController.toggleTorch();
                   },
                 ),
-                const SizedBox(width: 60),
+                const SizedBox(width: 40),
+
+                // Centered Start/Stop button
+                ElevatedButton(
+                  onPressed: _toggleScanning,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 14,
+                    ),
+                    backgroundColor: Colors.blue,
+                  ),
+                  child: Text(
+                    isStarted ? "Stop" : "Start",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 40),
+
                 _buildActionButton(
                   icon: Icons.image_outlined,
                   onPressed: () {
-                    // Handle image picker
                     _pickImageFromGallery();
                   },
                 ),
@@ -217,7 +248,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _handleScannedCode(String code) {
-    // Show result dialog or navigate to result screen
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -245,15 +275,42 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
+  // Inside your State class:
+
+  // Call this method when pressing the gallery button:
+
   void _pickImageFromGallery() async {
-    // Implement image picker functionality
-    // You'll need to add image_picker package
-    /*
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      // Process the image for QR code
-    }
-    */
+    //   try {
+    //     final XFile? pickedFile = await _picker.(
+    //       source: ImageSource.gallery,
+    //       maxWidth: 1024,
+    //       maxHeight: 1024,
+    //       imageQuality: 80,
+    //     );
+    //     if (pickedFile != null) {
+    //       final File imageFile = File(pickedFile.path);
+
+    //       // Analyze the image using MobileScannerController
+    //       final BarcodeCapture? capture = await cameraController.analyzeImage(imageFile);
+
+    //       // Extract barcodes list
+    //       final barcodes = capture?.barcodes ?? [];
+
+    //       if (barcodes.isNotEmpty) {
+    //         // Use the first detected barcode value
+    //         final String code = barcodes.first.rawValue ?? '';
+    //         _handleScannedCode(code);
+    //       } else {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           const SnackBar(content: Text('No QR/Barcode found in image')),
+    //         );
+    //       }
+    //     }
+    //   } catch (e) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text('Error picking image: $e')),
+    //     );
+    //   }
+    // }
   }
 }
