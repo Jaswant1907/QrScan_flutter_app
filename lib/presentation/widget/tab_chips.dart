@@ -6,11 +6,11 @@ class TabChips extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   const TabChips({
-    Key? key,
+    super.key,
     required this.labels,
     required this.selectedIndex,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

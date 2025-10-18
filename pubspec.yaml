@@ -40,6 +40,7 @@ dependencies:
   flutter_svg: 
   mobile_scanner: 
   permission_handler: 
+  image_pickers: 
   
 
 dev_dependencies:
