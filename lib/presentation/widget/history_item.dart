@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Example History data model
+//  History data model
 class HistoryItem {
   final String title;
   final String subtitle;
@@ -13,7 +13,6 @@ class HistoryItem {
   });
 }
 
-// Reusable Custom Card widget
 class HistoryCard extends StatelessWidget {
   final HistoryItem item;
   final VoidCallback? onTap;
