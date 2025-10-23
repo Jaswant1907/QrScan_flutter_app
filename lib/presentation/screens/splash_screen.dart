@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qscan_app_flutter/presentation/screens/home_screen.dart';
+import '../../core/utils/responsive_utils.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,42 +17,49 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // Start fade-in animation
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(Duration(milliseconds: 300), () {
       setState(() {
         _opacity = 1.0;
       });
     });
 
-    // Navigate to HomeScreen after delay
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+    Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final responsive = ResponsiveUtil(context);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
+          // Background gradient
           gradient: LinearGradient(
-            colors: [Color(0xFF2193b0), Color(0xFF6dd5ed)],
+            colors: [Color(0xFF2193b0), Color(0xFF6dd5ed)], // Blue shades
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(height: responsive.hp(15)),
+
             AnimatedOpacity(
               opacity: _opacity,
-              duration: const Duration(seconds: 2),
+              duration: const Duration(
+                seconds: 2,
+              ), // Reduced duration for faster animation
               child: Column(
                 children: [
                   CircleAvatar(
@@ -59,43 +67,62 @@ class _SplashScreenState extends State<SplashScreen> {
                       'assets/images/qr_scan_logo.png',
                     ),
                     backgroundColor: Colors.white,
-                    radius: 55,
+                    radius: responsive.wp(15), // Responsive radius
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: responsive.hp(2)),
+                  Text(
                     "Qscan",
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: responsive.sp(7), // Responsive font size
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                       letterSpacing: 1.5,
+                      shadows: const [
+                        Shadow(
+                          blurRadius: 5.0,
+                          color: Colors.black26,
+                          offset: Offset(2.0, 2.0),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
+
             const Spacer(),
-            const Column(
-              children: [
-                Text(
-                  "powered by",
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                Text(
-                  "Jashvant",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
+
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: responsive.hp(4),
+              ), // Consistent bottom padding
+              child: Column(
+                children: [
+                  Text(
+                    "powered by",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: responsive.sp(4),
+                    ),
                   ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "version 1.0",
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-                SizedBox(height: 30),
-              ],
+                  Text(
+                    "Jashvant",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: responsive.sp(6),
+                    ),
+                  ),
+                  SizedBox(height: responsive.hp(1)),
+                  Text(
+                    "version 1.0",
+                    style: TextStyle(
+                      color: Colors.white60,
+                      fontSize: responsive.sp(5),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

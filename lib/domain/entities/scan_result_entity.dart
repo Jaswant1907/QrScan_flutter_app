@@ -1,9 +1,7 @@
-/// Core domain entity representing a scan result
-/// This is the pure business object without any framework dependencies
 class ScanResult {
   final String id;
   final String value;
-  final String type; // 'QR Code' or 'Barcode'
+  final String type;
   final DateTime scannedAt;
   final bool isFavorite;
 

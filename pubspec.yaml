@@ -43,8 +43,15 @@ dependencies:
   image_pickers: 
   url_launcher: 
   shared_preferences: 
-  provider: 
   uuid: 
+  bloc: 
+  get_it: 
+  camera: 
+  equatable: 
+  image_gallery_saver_plus: 
+  screenshot: ^3.0.0
+  path_provider: ^2.1.0
+  intl: 
   
 
 dev_dependencies:

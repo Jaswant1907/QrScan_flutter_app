@@ -28,6 +28,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+       
+        // menifestPlaceholders = [ applicationName : "android.app.Application"]
+
     }
 
     buildTypes {

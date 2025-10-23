@@ -45,5 +45,17 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Camera permission -->
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to scan QR codes and barcodes.</string>
+
+   <!-- Photo Library permission (for saving or accessing images) -->
+   <key>NSPhotoLibraryUsageDescription</key>
+   <string>We need access to your photo library to save and access images.</string>
+
+   <!-- Photo Library Add Usage Description (iOS 11+) -->
+   <key>NSPhotoLibraryAddUsageDescription</key>
+   <string>We need permission to save photos to your library.</string>
+
 </dict>
 </plist>

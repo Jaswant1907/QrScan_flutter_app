@@ -2,22 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentDetailsScreen extends StatelessWidget {
-  final String payee;
-  final double amount;
-  final String currency;
-  final String paymentUri; // e.g., UPI or payment deep link
+  final String? payee;
+  final double? amount;
+  final String? currency;
+  final String? paymentUri; // e.g., UPI or payment deep link
 
   const PaymentDetailsScreen({
     super.key,
-    required this.payee,
-    required this.amount,
-    required this.currency,
-    required this.paymentUri,
+    this.payee,
+    this.amount,
+    this.currency,
+    this.paymentUri,
   });
 
   Future<void> _redirectToPaymentApp() async {
-    if (await canLaunch(paymentUri)) {
-      await launch(paymentUri);
+    final Uri paymentUriObj = Uri.parse(
+      paymentUri!,
+    ); // Make sure paymentUri is a String
+
+    if (await canLaunchUrl(paymentUriObj)) {
+      await launchUrl(paymentUriObj);
+    } else {
+      throw 'Could not launch $paymentUri';
     }
   }
 
@@ -40,7 +46,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                     Text('Payee: $payee', style: const TextStyle(fontSize: 18)),
                     const SizedBox(height: 8),
                     Text(
-                      'Amount: $currency ${amount.toStringAsFixed(2)}',
+                      'Amount: $currency ${amount?.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
