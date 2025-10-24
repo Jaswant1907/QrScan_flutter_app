@@ -85,10 +85,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       child: const Icon(Icons.delete, color: Colors.white),
                     ),
                     onDismissed: (direction) async {
-                      // Delete from repository
                       await _historyRepo.deleteHistoryItem(item);
 
-                      // Remove from local list and refresh UI
                       setState(() {
                         _historyItems.removeAt(index);
                       });
