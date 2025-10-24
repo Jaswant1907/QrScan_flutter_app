@@ -42,9 +42,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
         BarcodeFormat.upcA,
         BarcodeFormat.upcE,
       ],
-      autoStart: true,
+      autoStart: false,
     );
     screenshotController = ScreenshotController();
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) cameraController.start();
+    });
   }
 
   @override
