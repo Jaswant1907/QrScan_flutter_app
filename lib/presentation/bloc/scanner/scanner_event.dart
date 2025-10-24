@@ -1,24 +1,55 @@
+import 'dart:io';
 import 'dart:typed_data';
 
-abstract class ScannerEvent {}
+import 'package:equatable/equatable.dart';
 
-class ScannerStarted extends ScannerEvent {}
+abstract class ScannerEvent extends Equatable {}
 
-class StopScanner extends ScannerEvent {}
+class ScannerStarted extends ScannerEvent {
+  @override
+  List<Object?> get props => [];
+}
+
+class StopScanner extends ScannerEvent {
+  @override
+  List<Object?> get props => [];
+}
 
 class BarcodeDetected extends ScannerEvent {
   final String code;
   BarcodeDetected(this.code);
+
+  @override
+  List<Object?> get props => [];
 }
 
 class ScreenshotCaptured extends ScannerEvent {
   final Uint8List imageBytes;
   ScreenshotCaptured(this.imageBytes);
+
+  @override
+  List<Object?> get props => [imageBytes];
 }
 
-// Add new event to capture image
-class CaptureImage extends ScannerEvent {}
+class CaptureImage extends ScannerEvent {
+  @override
+  List<Object?> get props => [];
+}
 
-class ScannerToggleFlash extends ScannerEvent {}
+class AnalyzeImage extends ScannerEvent {
+  final File imageFile;
+  AnalyzeImage(this.imageFile);
 
-class ScannerReset extends ScannerEvent {}
+  @override
+  List<Object?> get props => [imageFile];
+}
+
+class ScannerToggleFlash extends ScannerEvent {
+  @override
+  List<Object?> get props => [];
+}
+
+class ScannerReset extends ScannerEvent {
+  @override
+  List<Object?> get props => [];
+}

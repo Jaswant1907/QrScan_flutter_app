@@ -2,24 +2,30 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'scanner_event.dart';
 import 'scanner_state.dart';
 
 class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
-  final MobileScannerController scannerController;
+  final CameraController cameraController;
+  final BarcodeScanner barcodeScanner;
   String? _lastDetectedCode;
   File? _capturedImage;
-  Uint8List? _screenshotBytes; // Store screenshot data
+  Uint8List? _screenshotBytes;
+  bool _isProcessing = false;
 
-  ScannerBloc({required this.scannerController}) : super(ScannerInitial()) {
+  ScannerBloc({required this.cameraController, BarcodeScanner? scanner})
+    : barcodeScanner = scanner ?? BarcodeScanner(),
+      super(ScannerInitial()) {
     on<ScannerStarted>(_onScannerStarted);
     on<StopScanner>(_onScannerStopped);
     on<BarcodeDetected>(_onBarcodeDetected);
-    on<ScreenshotCaptured>(_onScreenshotCaptured); // New event
+    on<ScreenshotCaptured>(_onScreenshotCaptured);
     on<ScannerToggleFlash>(_onToggleFlash);
     on<ScannerReset>(_onScannerReset);
+    on<AnalyzeImage>(_onAnalyzeImage);
   }
 
   Future<void> _onScannerStarted(
@@ -29,13 +35,13 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     try {
       emit(ScannerLoading());
 
-      if (!scannerController.value.isRunning) {
-        await scannerController.start();
+      if (!cameraController.value.isInitialized) {
+        await cameraController.initialize();
       }
 
       emit(
         ScannerReady(
-          isTorchOn: scannerController.value.torchState == TorchState.on,
+          isTorchOn: cameraController.value.flashMode == FlashMode.torch,
         ),
       );
     } catch (e) {
@@ -48,18 +54,12 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     Emitter<ScannerState> emit,
   ) async {
     try {
-      // Save screenshot to file if available
       if (_screenshotBytes != null) {
         await _saveScreenshotToFile();
       }
 
-      if (scannerController.value.isRunning) {
-        await scannerController.stop();
-      }
-
       emit(ScannerStopped());
 
-      // If there's a last detected code, emit success state with image
       if (_lastDetectedCode != null && _lastDetectedCode!.isNotEmpty) {
         final codeType = _determineCodeType(_lastDetectedCode!);
         emit(
@@ -70,7 +70,6 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
           ),
         );
       } else {
-        // No code detected, but we have the captured image
         emit(ScannerNoCode(imageFile: _capturedImage));
       }
     } catch (e) {
@@ -89,7 +88,51 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     }
   }
 
-  // Handle screenshot capture
+  Future<void> _onAnalyzeImage(
+    AnalyzeImage event,
+    Emitter<ScannerState> emit,
+  ) async {
+    if (_isProcessing) return;
+
+    try {
+      _isProcessing = true;
+      emit(ScannerLoading());
+
+      final inputImage = InputImage.fromFile(event.imageFile);
+      final List<Barcode> barcodes = await barcodeScanner.processImage(
+        inputImage,
+      );
+
+      if (barcodes.isNotEmpty) {
+        final barcode = barcodes.first;
+        final code = barcode.rawValue ?? '';
+
+        if (code.isNotEmpty) {
+          _lastDetectedCode = code;
+          _capturedImage = event.imageFile;
+
+          final codeType = _determineCodeType(code);
+
+          emit(
+            ScannerSuccess(
+              code: code,
+              codeType: codeType,
+              imageFile: event.imageFile,
+            ),
+          );
+        } else {
+          emit(ScannerNoCode(imageFile: event.imageFile));
+        }
+      } else {
+        emit(ScannerNoCode(imageFile: event.imageFile));
+      }
+    } catch (e) {
+      emit(ScannerFailure('Failed to analyze image: ${e.toString()}'));
+    } finally {
+      _isProcessing = false;
+    }
+  }
+
   Future<void> _onScreenshotCaptured(
     ScreenshotCaptured event,
     Emitter<ScannerState> emit,
@@ -97,11 +140,10 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     try {
       _screenshotBytes = event.imageBytes;
     } catch (e) {
-      print('Error storing screenshot: $e');
+      //  print('Error storing screenshot: $e');
     }
   }
 
-  // Save screenshot bytes to file
   Future<void> _saveScreenshotToFile() async {
     try {
       if (_screenshotBytes == null) return;
@@ -115,7 +157,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
       _capturedImage = file;
     } catch (e) {
-      print('Error saving screenshot to file: $e');
+      //  print('Error saving screenshot to file: $e');
       _capturedImage = null;
     }
   }
@@ -125,10 +167,17 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     Emitter<ScannerState> emit,
   ) async {
     try {
-      await scannerController.toggleTorch();
+      final currentFlashMode = cameraController.value.flashMode;
+
+      if (currentFlashMode == FlashMode.off) {
+        await cameraController.setFlashMode(FlashMode.torch);
+      } else {
+        await cameraController.setFlashMode(FlashMode.off);
+      }
+
       emit(
         ScannerReady(
-          isTorchOn: scannerController.value.torchState == TorchState.on,
+          isTorchOn: cameraController.value.flashMode == FlashMode.torch,
         ),
       );
     } catch (e) {
@@ -144,14 +193,11 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       _lastDetectedCode = null;
       _capturedImage = null;
       _screenshotBytes = null;
-
-      if (!scannerController.value.isRunning) {
-        await scannerController.start();
-      }
+      _isProcessing = false;
 
       emit(
         ScannerReady(
-          isTorchOn: scannerController.value.torchState == TorchState.on,
+          isTorchOn: cameraController.value.flashMode == FlashMode.torch,
         ),
       );
     } catch (e) {
@@ -193,6 +239,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
   @override
   Future<void> close() {
+    barcodeScanner.close();
     return super.close();
   }
 }

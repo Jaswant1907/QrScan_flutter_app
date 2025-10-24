@@ -7,6 +7,7 @@ class HistoryCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const HistoryCard({super.key, required this.item, this.onTap});
+
   IconData _getIconForType(String type) {
     print('Type to icon mapping: $type');
     final lowerType = type.toLowerCase();
@@ -24,7 +25,7 @@ class HistoryCard extends StatelessWidget {
       return Icons.qr_code_scanner;
     }
 
-    if (lowerType.startsWith('upi://')) {
+    if (lowerType.startsWith('upi://') || lowerType.contains('payment')) {
       print('Icon: payment');
       return Icons.payment;
     }
@@ -39,14 +40,22 @@ class HistoryCard extends StatelessWidget {
   }
 
   Color _getColorForType(String type) {
-    switch (type.toLowerCase()) {
+    final lowerType = type.toLowerCase();
+
+    if (lowerType.startsWith('http://') || lowerType.startsWith('https://')) {
+      return Colors.blue;
+    }
+
+    if (lowerType.contains('upi') || lowerType.contains('payment')) {
+      return Colors.orange;
+    }
+
+    switch (lowerType) {
       case 'qr':
       case 'qr code':
         return Colors.indigo;
       case 'barcode':
         return Colors.teal;
-      case 'upi':
-        return Colors.orange;
       default:
         return Colors.grey;
     }
@@ -74,6 +83,7 @@ class HistoryCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
+            // Icon with colored background
             CircleAvatar(
               radius: 24,
               backgroundColor: _getColorForType(
@@ -86,6 +96,8 @@ class HistoryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
+
+            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,6 +127,9 @@ class HistoryCard extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Arrow indicator
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
@@ -124,17 +139,20 @@ class HistoryCard extends StatelessWidget {
   String _getTitleForType(String scanType, String data) {
     final lowerData = data.toLowerCase();
 
-    if (lowerData.contains('upi://')) {
-      return 'UPI Link';
-    } else if (lowerData.contains('https:')) {
-      return 'Link';
-    } else if (lowerData.contains('http://') ||
-        scanType.toLowerCase() == 'http://' ||
-        scanType.toLowerCase() == 'http') {
+    if (lowerData.startsWith('upi://') || lowerData.contains('upi')) {
+      return 'UPI Payment';
+    } else if (lowerData.startsWith('https://') ||
+        lowerData.startsWith('http://')) {
+      return 'Website Link';
+    } else if (scanType.toLowerCase().contains('qr')) {
       return 'QR Code';
-    } else {
-      // For any other data or number show Barcode
+    } else if (scanType.toLowerCase().contains('barcode')) {
       return 'Barcode';
+    } else {
+      if (RegExp(r'^\d+$').hasMatch(data)) {
+        return 'Barcode';
+      }
+      return 'QR Code';
     }
   }
 }

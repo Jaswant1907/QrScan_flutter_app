@@ -38,7 +38,6 @@ dependencies:
   hive_flutter:
   flutter_bloc: 
   flutter_svg: 
-  mobile_scanner: 
   permission_handler: 
   image_pickers: 
   url_launcher: 
@@ -52,7 +51,8 @@ dependencies:
   screenshot: ^3.0.0
   path_provider: ^2.1.0
   intl: 
-  
+  path: 
+  google_mlkit_barcode_scanning: 
 
 dev_dependencies:
   flutter_test:

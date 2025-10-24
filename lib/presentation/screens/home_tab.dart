@@ -27,8 +27,8 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _loadScanData() async {
     final historyRepo = HistoryRepository();
 
-    int todayScans = await historyRepo.getScansToday();
-    int historyScans = await historyRepo.getTotalScans();
+    int todayScans = historyRepo.getScansToday();
+    int historyScans = historyRepo.getTotalScans();
 
     int favs = 35;
 

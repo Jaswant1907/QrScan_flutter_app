@@ -3,6 +3,9 @@ import 'package:qscan_app_flutter/presentation/model/history_item.dart';
 import '../../core/utils/responsive_utils.dart';
 import 'package:qscan_app_flutter/presentation/repository/history_repo.dart';
 import 'package:qscan_app_flutter/presentation/widget/history_card.dart';
+import 'package:qscan_app_flutter/presentation/screens/details/barcode_details_screen.dart';
+import 'package:qscan_app_flutter/presentation/screens/details/link_details.dart';
+import 'package:qscan_app_flutter/presentation/screens/details/payment_details.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,7 +28,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _loadHistory() async {
     setState(() => _isLoading = true);
     try {
-      final items = await _historyRepo.getAllHistory();
+      final items = _historyRepo.getAllHistory();
       setState(() {
         _historyItems = items;
       });
@@ -37,6 +40,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  void _navigateToDetails(HistoryItem item) {
+    final data = item.data.toLowerCase();
+    Widget destination;
+
+    // Determine which detail screen to show based on data type
+    if (data.startsWith('http://') || data.startsWith('https://')) {
+      // URL/Link
+      destination = LinkDetailsScreen(url: item.data);
+    } else if (data.startsWith('upi://') || data.contains('upi')) {
+      // UPI Payment
+      destination = PaymentDetailsScreen(payee: item.data);
+    } else {
+      // Default to Barcode/QR details
+      destination = BarcodeDetailsScreen(code: item.data);
+    }
+
+    Navigator.push(context, MaterialPageRoute(builder: (_) => destination));
+  }
+
   @override
   Widget build(BuildContext context) {
     final responsive = ResponsiveUtil(context);
@@ -44,7 +66,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[100],
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -73,11 +95,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 itemBuilder: (context, index) {
                   final item = _historyItems[index];
                   return Dismissible(
-                    key: Key(
-                      item.date.toIso8601String() + item.data,
-                    ), // Unique key
-                    direction:
-                        DismissDirection.endToStart, // swipe from right to left
+                    key: Key(item.date.toIso8601String() + item.data),
+                    direction: DismissDirection.endToStart,
                     background: Container(
                       color: Colors.red,
                       alignment: Alignment.centerRight,
@@ -95,7 +114,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         SnackBar(content: Text('Deleted "${item.data}"')),
                       );
                     },
-                    child: HistoryCard(item: item, onTap: () {}),
+                    child: HistoryCard(
+                      item: item,
+                      onTap: () => _navigateToDetails(item),
+                    ),
                   );
                 },
               ),
